@@ -35,7 +35,7 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
   const sseClients = new Set<ServerResponse>();
   let currentPdf: Buffer | null = null;
   let isRunning = false;
-  // 生成された PDF のパス
+  /** 生成された PDF のパス． */
   const generatedPdfPaths = new Set<string>();
 
   /**
@@ -101,6 +101,15 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
 
   return {
     name: "minitype",
+    enforce: "pre",
+
+    config() {
+      return {
+        ssr: {
+          noExternal: ["minitype"],
+        },
+      };
+    },
 
     configResolved(config: ResolvedConfig) {
       projectRoot = config.root;
@@ -112,6 +121,10 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
       importer: string | undefined,
       resolveOptions: { ssr?: boolean },
     ) {
+      if (id === SERVER_WRAPPER) {
+        return SERVER_WRAPPER;
+      }
+
       // SSR コンテキストでのみ差し替え
       // SERVER_WRAPPER 自身がインポートする際はスキップ（再帰を防ぐ）
       if (
@@ -133,6 +146,19 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
     // 開発サーバのセットアップ
     configureServer(server: ViteDevServer) {
       setupGlobals();
+
+      // ビルド済みのブラウザアプリとワーカーをサーバ起動時に一度読み込む
+      const distDir = path.dirname(fileURLToPath(import.meta.url));
+      const previewAppJs = readFileSync(
+        path.join(distDir, "preview-app/index.js"),
+      );
+      const previewAppCss = readFileSync(
+        path.join(distDir, "preview-app/index.css"),
+      );
+      const require = createRequire(import.meta.url);
+      const workerJs = readFileSync(
+        require.resolve("pdfjs-dist/build/pdf.worker.min.mjs"),
+      );
 
       // ファイルを Vite のファイル監視に追加
       const extensions = ["md", "webp", "jpeg", "jpg", "png", "gif", "pdf"];
@@ -167,6 +193,39 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
           req.on("close", () => {
             sseClients.delete(res);
           });
+        },
+      );
+
+      // GET /__minitype/app.css
+      // ブラウザ向けにビルドされた CSS を配信する
+      server.middlewares.use(
+        "/__minitype/app.css",
+        (_req: IncomingMessage, res: ServerResponse) => {
+          res.setHeader("Content-Type", "text/css");
+          res.setHeader("Cache-Control", "no-store");
+          res.end(previewAppCss);
+        },
+      );
+
+      // GET /__minitype/app.js
+      // ブラウザ向けにビルドされた React プレビューアプリを配信する
+      server.middlewares.use(
+        "/__minitype/app.js",
+        (_req: IncomingMessage, res: ServerResponse) => {
+          res.setHeader("Content-Type", "application/javascript");
+          res.setHeader("Cache-Control", "no-store");
+          res.end(previewAppJs);
+        },
+      );
+
+      // GET /__minitype/pdf.worker.js
+      // pdfjs-dist のワーカーファイルを配信する
+      server.middlewares.use(
+        "/__minitype/pdf.worker.js",
+        (_req: IncomingMessage, res: ServerResponse) => {
+          res.setHeader("Content-Type", "application/javascript");
+          res.setHeader("Cache-Control", "no-store");
+          res.end(workerJs);
         },
       );
 

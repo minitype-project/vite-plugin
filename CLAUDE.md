@@ -9,6 +9,7 @@
 ## ツールキット
 
 - npm ではなく yarn を使用してください．
+- minitype は ../minitype，create-minitype は ../create-minitype に存在します．
 
 ## コーディングスタイル
 

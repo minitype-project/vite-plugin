@@ -1,0 +1,36 @@
+{
+  "name": "@minitype/vite-plugin",
+  "version": "0.1.0",
+  "description": "Vite plugin for minitype — live preview with HMR.",
+  "author": "Yuto Wada",
+  "type": "module",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsx build.ts && tsc --emitDeclarationOnly && tsc-alias",
+    "check": "biome check ./src --write"
+  },
+  "peerDependencies": {
+    "minitype": "*",
+    "vite": ">=5.0.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.2.4",
+    "@types/node": "^22.0.0",
+    "esbuild": "^0.25.10",
+    "minitype": "file:../minitype",
+    "tsc-alias": "^1.8.16",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2",
+    "vite": "^7.3.1"
+  }
+}

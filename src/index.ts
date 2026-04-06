@@ -35,6 +35,8 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
   const sseClients = new Set<ServerResponse>();
   let currentPdf: Buffer | null = null;
   let isRunning = false;
+  // 生成された PDF のパス
+  const generatedPdfPaths = new Set<string>();
 
   /**
    * SSE でクライアントにイベントを送信する．
@@ -51,7 +53,13 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
    * `globalThis` 経由で結果を受け取れる．
    */
   const setupGlobals = () => {
-    (globalThis as any).__minitypeSendResult = (pdf: Uint8Array) => {
+    (globalThis as any).__minitypeSendResult = (
+      pdf: Uint8Array,
+      outputPath?: string,
+    ) => {
+      if (outputPath) {
+        generatedPdfPaths.add(outputPath);
+      }
       currentPdf = Buffer.from(pdf);
       sendToClients("updated", "");
     };
@@ -73,8 +81,13 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
     // 再組版開始をブラウザに通知してローディング状態に戻す
     sendToClients("restarted", "");
     try {
-      // 実行前にモジュールキャッシュを全消去して，常にソースの最新状態が反映されるようにする
-      server.moduleGraph.invalidateAll();
+      // node_modules 以外のモジュールキャッシュを消去して，ソースの最新状態が反映されるようにする．
+      // node_modules は再実行しないことにより，フォントのインメモリキャッシュを再組版時にも保持する．
+      for (const [, mod] of server.moduleGraph.idToModuleMap) {
+        if (mod.id && !mod.id.includes("/node_modules/")) {
+          server.moduleGraph.invalidateModule(mod);
+        }
+      }
 
       const rawEntry = options.entry ?? "index.ts";
       const entryUrl = rawEntry.startsWith("/") ? rawEntry : `/${rawEntry}`;
@@ -129,7 +142,10 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
 
       // .md ファイル変更時の再実行
       server.watcher.on("change", (file) => {
-        if (extensions.some((ext) => file.endsWith(`.${ext}`))) {
+        if (
+          !generatedPdfPaths.has(file) &&
+          extensions.some((ext) => file.endsWith(`.${ext}`))
+        ) {
           runEntry(server);
         }
       });

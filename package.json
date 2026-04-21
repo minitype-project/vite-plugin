@@ -26,11 +26,18 @@
   "devDependencies": {
     "@biomejs/biome": "^2.4.10",
     "@types/node": "^22.0.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "esbuild": "^0.25.10",
     "minitype": "file:../minitype",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "tsc-alias": "^1.8.16",
     "tsx": "^4.20.5",
     "typescript": "^6.0.2",
     "vite": "^8.0.3"
+  },
+  "dependencies": {
+    "pdfjs-dist": "^5.6.205"
   }
 }

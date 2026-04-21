@@ -1,10 +1,13 @@
+import { readFileSync } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { createRequire } from "node:module";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import type { Plugin, ResolvedConfig, ViteDevServer } from "vite";
-import { generatePreviewHtml } from "./preview.js";
 import { generateServerWrapperCode } from "./server-wrapper.js";
 
 // SSR コンテキストで `minitype` インポートを差し替えるラッパーモジュール
+const MINITYPE_PACKAGE = "@minitype/minitype";
 const SERVER_WRAPPER = "\0minitype-server-wrapper";
 
 /**
@@ -106,7 +109,7 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
     config() {
       return {
         ssr: {
-          noExternal: ["minitype"],
+          noExternal: [MINITYPE_PACKAGE],
         },
       };
     },
@@ -128,7 +131,7 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
       // SSR コンテキストでのみ差し替え
       // SERVER_WRAPPER 自身がインポートする際はスキップ（再帰を防ぐ）
       if (
-        id === "minitype" &&
+        id === MINITYPE_PACKAGE &&
         resolveOptions.ssr &&
         importer !== SERVER_WRAPPER
       ) {
@@ -148,7 +151,6 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
       setupGlobals();
 
       // ビルド済みのブラウザアプリとワーカーをサーバ起動時に一度読み込む
-      const distDir = path.dirname(fileURLToPath(import.meta.url));
       const previewAppJs = readFileSync(
         path.join(distDir, "preview-app/index.js"),
       );

@@ -10,6 +10,12 @@ import { generateServerWrapperCode } from "./server-wrapper.js";
 const MINITYPE_PACKAGE = "@minitype/minitype";
 const SERVER_WRAPPER = "\0minitype-server-wrapper";
 
+const distDir = path.dirname(fileURLToPath(import.meta.url));
+const htmlTemplate = readFileSync(
+  path.join(distDir, "preview-app/index.html"),
+  "utf-8",
+);
+
 /**
  * `@minitype/vite-plugin` のオプション．
  */
@@ -192,6 +198,10 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
           res.write(":\n\n");
 
           sseClients.add(res);
+          // 接続時に組版済み PDF が存在する場合は即座に通知する
+          if (currentPdf) {
+            res.write("event: updated\ndata: \n\n");
+          }
           req.on("close", () => {
             sseClients.delete(res);
           });
@@ -252,8 +262,9 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
       server.middlewares.use(
         "/",
         (_req: IncomingMessage, res: ServerResponse) => {
+          const entryDisplay = options.entry ?? "index.ts";
           res.setHeader("Content-Type", "text/html; charset=utf-8");
-          res.end(generatePreviewHtml(options));
+          res.end(htmlTemplate.replace("%ENTRY%", entryDisplay));
         },
       );
 

@@ -15,9 +15,6 @@ const copyFilePlugin = (src: string, dest: string): Plugin => ({
     inBuild.onEnd(() => {
       mkdirSync(dirname(dest), { recursive: true });
       copyFileSync(src, dest);
-      console.log(
-        `[${new Date().toLocaleTimeString()}] Copied ${src} -> ${dest}`,
-      );
     });
   },
 });

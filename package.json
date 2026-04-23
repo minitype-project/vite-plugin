@@ -17,6 +17,7 @@
   ],
   "scripts": {
     "build": "tsx build.ts && tsc --emitDeclarationOnly && tsc-alias",
+    "watch": "tsx build.ts --watch",
     "check": "biome check ./src --write"
   },
   "peerDependencies": {
@@ -25,6 +26,8 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.10",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
     "@types/node": "^22.0.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",

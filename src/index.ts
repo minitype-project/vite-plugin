@@ -1,20 +1,38 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { Plugin, ResolvedConfig, ViteDevServer } from "vite";
+import {
+  createServer,
+  type Plugin,
+  type ResolvedConfig,
+  type ViteDevServer,
+} from "vite";
 import { generateServerWrapperCode } from "./server-wrapper.js";
 
 // SSR コンテキストで `minitype` インポートを差し替えるラッパーモジュール
 const MINITYPE_PACKAGE = "@minitype/minitype";
 const SERVER_WRAPPER = "\0minitype-server-wrapper";
+// ビルドモード時に Vite のデフォルトエントリ（index.html）要求を回避するダミーエントリ
+const DUMMY_ENTRY = "\0minitype-entry";
 
 const distDir = path.dirname(fileURLToPath(import.meta.url));
 const htmlTemplate = readFileSync(
   path.join(distDir, "preview-app/index.html"),
   "utf-8",
 );
+
+/** ファイル監視対象のデフォルト拡張子（.ts を除く）． */
+const deafultWatchExtensions = [
+  "md",
+  "webp",
+  "jpeg",
+  "jpg",
+  "png",
+  "gif",
+  "pdf",
+];
 
 /**
  * `@minitype/vite-plugin` のオプション．
@@ -25,7 +43,40 @@ export interface MinitypePluginOptions {
    * @default 'index.ts'
    */
   entry?: string;
+  /**
+   * ファイル変更時に再組版をトリガーする拡張子のリスト（`.ts` を除く）．
+   * @default ["md", "webp", "jpeg", "jpg", "png", "gif", "pdf"]
+   */
+  watchExtensions?: string[];
 }
+
+/**
+ * SSR コンテキストでの `@minitype/minitype` インポートをラッパーモジュールに差し替える．
+ */
+const resolveMinitypeId = (
+  id: string,
+  importer: string | undefined,
+  ssr: boolean,
+): string | undefined => {
+  if (id === SERVER_WRAPPER) {
+    return SERVER_WRAPPER;
+  }
+
+  // SSR コンテキストでのみ差し替え
+  // SERVER_WRAPPER 自身がインポートする際はスキップ（再帰を防ぐ）
+  if (id === MINITYPE_PACKAGE && ssr && importer !== SERVER_WRAPPER) {
+    return SERVER_WRAPPER;
+  }
+};
+
+/**
+ * 差し替え先のモジュールコードを返す．
+ */
+const loadMinitypeModule = (id: string): string | undefined => {
+  if (id === SERVER_WRAPPER) {
+    return generateServerWrapperCode();
+  }
+};
 
 /**
  * minitype の Vite プラグインを生成する．
@@ -34,9 +85,11 @@ export interface MinitypePluginOptions {
  * - Vite 開発サーバ（Node.js）上で組版処理を実行する．ファイルの変更を検知して再度組版する．
  * - SSE を用いて組版の状態をクライアントに通知する．
  * - ブラウザ上でのプレビュー機能を提供する．
+ * - `vite build` 実行時に組版結果の PDF をディスクに書き出す．
  */
 export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
   let projectRoot: string;
+  let resolvedConfig!: ResolvedConfig;
 
   // ------
   // SSE クライアント管理
@@ -112,44 +165,46 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
     name: "minitype",
     enforce: "pre",
 
-    config() {
-      return {
+    config(_, { command }) {
+      const base = {
         ssr: {
           noExternal: [MINITYPE_PACKAGE],
+        },
+      };
+      if (command !== "build") {
+        return base;
+      }
+      return {
+        ...base,
+        build: {
+          rollupOptions: {
+            input: DUMMY_ENTRY,
+          },
         },
       };
     },
 
     configResolved(config: ResolvedConfig) {
       projectRoot = config.root;
+      resolvedConfig = config;
     },
 
-    // SSR コンテキストの `minitype` インポートを差し替える
     resolveId(
       id: string,
       importer: string | undefined,
       resolveOptions: { ssr?: boolean },
     ) {
-      if (id === SERVER_WRAPPER) {
-        return SERVER_WRAPPER;
+      if (id === DUMMY_ENTRY) {
+        return DUMMY_ENTRY;
       }
-
-      // SSR コンテキストでのみ差し替え
-      // SERVER_WRAPPER 自身がインポートする際はスキップ（再帰を防ぐ）
-      if (
-        id === MINITYPE_PACKAGE &&
-        resolveOptions.ssr &&
-        importer !== SERVER_WRAPPER
-      ) {
-        return SERVER_WRAPPER;
-      }
+      return resolveMinitypeId(id, importer, resolveOptions.ssr ?? false);
     },
 
-    // 差し替え先のモジュールを返す
     load(id: string) {
-      if (id === SERVER_WRAPPER) {
-        return generateServerWrapperCode();
+      if (id === DUMMY_ENTRY) {
+        return "";
       }
+      return loadMinitypeModule(id);
     },
 
     // 開発サーバのセットアップ
@@ -169,12 +224,12 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
       );
 
       // ファイルを Vite のファイル監視に追加
-      const extensions = ["md", "webp", "jpeg", "jpg", "png", "gif", "pdf"];
+      const extensions = options.watchExtensions ?? deafultWatchExtensions;
       server.watcher.add(
         path.join(projectRoot, `**/*.{${extensions.join(",")}}`),
       );
 
-      // .md ファイル変更時の再実行
+      // 監視対象ファイル変更時の再実行
       server.watcher.on("change", (file) => {
         if (
           !generatedPdfPaths.has(file) &&
@@ -272,6 +327,69 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
       server.httpServer?.once("listening", () => {
         runEntry(server);
       });
+    },
+
+    // ビルドモード：組版処理を実行して組版結果の PDF をディスクに書き出す．
+    async closeBundle() {
+      if (
+        resolvedConfig.command !== "build" ||
+        resolvedConfig.build.ssr ||
+        resolvedConfig.build.watch
+      ) {
+        return;
+      }
+
+      // 最小構成の Vite サーバを起動
+      const buildServer = await createServer({
+        root: projectRoot,
+        // HTTP サーバを起動しない
+        server: { middlewareMode: true },
+        appType: "custom",
+        ssr: { noExternal: [MINITYPE_PACKAGE] },
+        plugins: [
+          {
+            name: "minitype-build",
+            enforce: "pre",
+            resolveId(id, importer, opts) {
+              return resolveMinitypeId(id, importer, opts.ssr ?? false);
+            },
+            load(id) {
+              return loadMinitypeModule(id);
+            },
+          },
+        ],
+        logLevel: "silent",
+      });
+
+      (globalThis as any).__minitypeSendResult = (
+        pdf: Uint8Array,
+        outputPath?: string,
+      ) => {
+        if (outputPath) {
+          writeFileSync(outputPath, Buffer.from(pdf));
+          console.log(`[minitype] PDF saved: ${outputPath}`);
+        } else {
+          console.warn(
+            "[minitype] PDF was generated but no output path was specified. Call save() with a path.",
+          );
+        }
+      };
+      (globalThis as any).__minitypeSendError = (error: unknown) => {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error(`[minitype] Typesetting error: ${message}`);
+      };
+
+      const rawEntry = options.entry ?? "index.ts";
+      const entryUrl = rawEntry.startsWith("/") ? rawEntry : `/${rawEntry}`;
+
+      try {
+        await buildServer.ssrLoadModule(entryUrl);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error(`[minitype] Build failed: ${message}`);
+      } finally {
+        await buildServer.close();
+      }
     },
 
     // .ts ファイル変更時に再組版する

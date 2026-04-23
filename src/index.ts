@@ -282,6 +282,40 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
         },
       );
 
+      // POST /__minitype/style-override
+      // GUI スタイルパネルからのスタイルオーバーライドを受け取り，再組版する
+      server.middlewares.use(
+        "/__minitype/style-override",
+        (req: IncomingMessage, res: ServerResponse) => {
+          if (req.method !== "POST") {
+            // 405 Method Not Allowed
+            res.statusCode = 405;
+            res.end();
+            return;
+          }
+          const chunks: Buffer[] = [];
+          req.on("data", (chunk: Buffer) => {
+            chunks.push(chunk);
+          });
+          req.on("end", () => {
+            try {
+              const body = Buffer.concat(chunks).toString("utf-8");
+              const override = JSON.parse(body);
+              (globalThis as any).__minitypeStyleOverride =
+                override && Object.keys(override).length > 0 ? override : null;
+              runEntry(server);
+              res.statusCode = 200;
+              res.setHeader("Content-Type", "application/json");
+              res.end("{}");
+            } catch {
+              // 400 Bad Request
+              res.statusCode = 400;
+              res.end();
+            }
+          });
+        },
+      );
+
       // GET /__minitype/result.pdf
       // 組版完了後，ブラウザがこのエンドポイントから PDF を取得する
       server.middlewares.use(

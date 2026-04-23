@@ -1,7 +1,7 @@
+import { css, Global } from "@emotion/react";
 import * as pdfjs from "pdfjs-dist";
 import { createRoot } from "react-dom/client";
 
-import "./index.css";
 import App from "./App.jsx";
 
 // `Map.prototype.getOrInsertComputed` は React 19.2 にて使用されるが，ブラウザでは未実装のためポリフィルを適用
@@ -24,5 +24,30 @@ const rootElement = document.getElementById("root");
 const entry = rootElement?.dataset.entry ?? "index.ts";
 
 if (rootElement) {
-  createRoot(rootElement).render(<App entry={entry} />);
+  createRoot(rootElement).render(
+    <>
+      <Global
+        styles={css`
+          *,
+          *::before,
+          *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+          }
+          body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: hsl(0 0 98);
+          }
+          #root {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+          }
+        `}
+      />
+      <App entry={entry} />
+    </>,
+  );
 }

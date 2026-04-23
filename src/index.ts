@@ -215,9 +215,6 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
       const previewAppJs = readFileSync(
         path.join(distDir, "preview-app/index.js"),
       );
-      const previewAppCss = readFileSync(
-        path.join(distDir, "preview-app/index.css"),
-      );
       const require = createRequire(import.meta.url);
       const workerJs = readFileSync(
         require.resolve("pdfjs-dist/build/pdf.worker.min.mjs"),
@@ -260,17 +257,6 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
           req.on("close", () => {
             sseClients.delete(res);
           });
-        },
-      );
-
-      // GET /__minitype/app.css
-      // ブラウザ向けにビルドされた CSS を配信する
-      server.middlewares.use(
-        "/__minitype/app.css",
-        (_req: IncomingMessage, res: ServerResponse) => {
-          res.setHeader("Content-Type", "text/css");
-          res.setHeader("Cache-Control", "no-store");
-          res.end(previewAppCss);
         },
       );
 

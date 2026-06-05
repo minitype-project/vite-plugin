@@ -1,18 +1,15 @@
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import {
-  createServer,
-  type Plugin,
-  type ResolvedConfig,
-  type ViteDevServer,
-} from "vite";
+import type { Plugin, ResolvedConfig, ViteDevServer } from "vite";
+
+import { MINITYPE_PACKAGE, runBuildHandler } from "./build-handler.js";
+import { createOutlineHandler } from "./outline-handler.js";
 import { generateServerWrapperCode } from "./server-wrapper.js";
 
 // SSR コンテキストで `minitype` インポートを差し替えるラッパーモジュール
-const MINITYPE_PACKAGE = "@minitype/minitype";
 const SERVER_WRAPPER = "\0minitype-server-wrapper";
 // ビルドモード時に Vite のデフォルトエントリ（index.html）要求を回避するダミーエントリ
 const DUMMY_ENTRY = "\0minitype-entry";
@@ -48,6 +45,10 @@ export interface MinitypePluginOptions {
    * @default ["md", "webp", "jpeg", "jpg", "png", "gif", "pdf"]
    */
   watchExtensions?: string[];
+  /**
+   * アウトラインエディタが編集する（`body: Body = [...]` を含む）TypeScript ファイルの相対パス．
+   */
+  outlineFile?: string;
 }
 
 /**
@@ -282,6 +283,13 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
         },
       );
 
+      // GET / POST /__minitype/outline/**
+      // アウトラインエディタのエンドポイント群
+      server.middlewares.use(
+        "/__minitype/outline",
+        createOutlineHandler(options.outlineFile, projectRoot),
+      );
+
       // POST /__minitype/style-override
       // GUI スタイルパネルからのスタイルオーバーライドを受け取り，再組版する
       server.middlewares.use(
@@ -358,58 +366,12 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
       ) {
         return;
       }
-
-      // 最小構成の Vite サーバを起動
-      const buildServer = await createServer({
-        root: projectRoot,
-        // HTTP サーバを起動しない
-        server: { middlewareMode: true },
-        appType: "custom",
-        ssr: { noExternal: [MINITYPE_PACKAGE] },
-        plugins: [
-          {
-            name: "minitype-build",
-            enforce: "pre",
-            resolveId(id, importer, opts) {
-              return resolveMinitypeId(id, importer, opts.ssr ?? false);
-            },
-            load(id) {
-              return loadMinitypeModule(id);
-            },
-          },
-        ],
-        logLevel: "silent",
-      });
-
-      (globalThis as any).__minitypeSendResult = (
-        pdf: Uint8Array,
-        outputPath?: string,
-      ) => {
-        if (outputPath) {
-          writeFileSync(outputPath, Buffer.from(pdf));
-          console.log(`[minitype] PDF saved: ${outputPath}`);
-        } else {
-          console.warn(
-            "[minitype] PDF was generated but no output path was specified. Call save() with a path.",
-          );
-        }
-      };
-      (globalThis as any).__minitypeSendError = (error: unknown) => {
-        const message = error instanceof Error ? error.message : String(error);
-        console.error(`[minitype] Typesetting error: ${message}`);
-      };
-
-      const rawEntry = options.entry ?? "index.ts";
-      const entryUrl = rawEntry.startsWith("/") ? rawEntry : `/${rawEntry}`;
-
-      try {
-        await buildServer.ssrLoadModule(entryUrl);
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        console.error(`[minitype] Build failed: ${message}`);
-      } finally {
-        await buildServer.close();
-      }
+      await runBuildHandler(
+        options.entry,
+        projectRoot,
+        resolveMinitypeId,
+        loadMinitypeModule,
+      );
     },
 
     // .ts ファイル変更時に再組版する

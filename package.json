@@ -21,18 +21,17 @@
     "check": "biome check ./src --write"
   },
   "peerDependencies": {
-    "minitype": "*",
     "vite": ">=5.0.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.10",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@minitype/minitype": "../minitype",
     "@types/node": "^22.0.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "esbuild": "^0.25.10",
-    "minitype": "file:../minitype",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "tsc-alias": "^1.8.16",

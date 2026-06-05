@@ -46,7 +46,7 @@ const pluginOptions: BuildOptions = {
   format: "esm",
   platform: "node",
   target: "node18",
-  external: ["vite", "minitype"],
+  external: ["vite", "@minitype/minitype"],
   sourcemap: true,
   minify: false,
 };

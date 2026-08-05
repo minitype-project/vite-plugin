@@ -19,6 +19,8 @@ export const useZoom = () => {
   const contentRef = useRef<HTMLDivElement>(null);
   /** 縦方向の画面に対する中央位置の比率．*/
   const verticalCenterRatioRef = useRef<number | null>(null);
+  /** 最後のズーム操作がステップ（キーボード）か否かを示すフラグ．*/
+  const isStepZoomRef = useRef(false);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: zoom はエフェクトのトリガーとして使用する
   useLayoutEffect(() => {
@@ -51,6 +53,7 @@ export const useZoom = () => {
       if (e.key === "+" || e.key === "=") {
         e.preventDefault();
         setVerticalCenter();
+        isStepZoomRef.current = true;
         setZoom((prev) => {
           const next = ZOOM_LEVELS.find((level) => level > prev);
           return next ?? ZOOM_MAX;
@@ -58,6 +61,7 @@ export const useZoom = () => {
       } else if (e.key === "-") {
         e.preventDefault();
         setVerticalCenter();
+        isStepZoomRef.current = true;
         setZoom((prev) => {
           const next = [...ZOOM_LEVELS].reverse().find((level) => level < prev);
           return next ?? ZOOM_MIN;
@@ -71,6 +75,7 @@ export const useZoom = () => {
       }
       e.preventDefault();
       setVerticalCenter();
+      isStepZoomRef.current = false;
       const factor = WHEEL_ZOOM_FACTOR_BASE ** e.deltaY;
       setZoom((prev) => Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, prev * factor)));
     };
@@ -84,5 +89,5 @@ export const useZoom = () => {
     };
   }, []);
 
-  return { zoom, contentRef };
+  return { zoom, isStepZoomRef, contentRef };
 };

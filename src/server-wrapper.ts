@@ -10,22 +10,24 @@ import path from "node:path";
 export * from "@minitype/minitype";
 
 export const minitype = (groups, style, options) => {
-  const override = globalThis.__minitypeStyleOverride;
-  const mergedStyle = override
-    ? realMinitype.mergeDocumentStyle(style ?? {}, override)
-    : (style ?? {});
-  const realDoc = realMinitype.minitype(groups, mergedStyle, options);
+  const realDoc = realMinitype.minitype(groups, style ?? {}, options);
 
   return {
     // PDF をプレビューへ送信する実装で上書き
     async save(outputPath) {
       try {
-        const pdf = await realDoc.toPdf();
         const resolvedPath = outputPath != null ? path.resolve(outputPath) : undefined;
-        globalThis.__minitypeSendResult?.(pdf, resolvedPath);
+        const isPng = resolvedPath?.endsWith(".png") ?? false;
+        if (isPng) {
+          const images = await realDoc.toImages();
+          const pdf = await realDoc.toPdf();
+          globalThis.__minitypeSendImages?.(images, resolvedPath, pdf);
+        } else {
+          const pdf = await realDoc.toPdf();
+          globalThis.__minitypeSendResult?.(pdf, resolvedPath);
+        }
       } catch (error) {
         globalThis.__minitypeSendError?.(error);
-        throw error;
       }
     },
     toPdf: () => realDoc.toPdf(),

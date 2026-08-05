@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { createRequire } from "node:module";
 import path from "node:path";
@@ -6,7 +6,6 @@ import { fileURLToPath } from "node:url";
 import type { Plugin, ResolvedConfig, ViteDevServer } from "vite";
 
 import { MINITYPE_PACKAGE, runBuildHandler } from "./build-handler.js";
-import { createOutlineHandler } from "./outline-handler.js";
 import { generateServerWrapperCode } from "./server-wrapper.js";
 
 // SSR コンテキストで `minitype` インポートを差し替えるラッパーモジュール
@@ -45,10 +44,6 @@ export interface MinitypePluginOptions {
    * @default ["md", "webp", "jpeg", "jpg", "png", "gif", "pdf"]
    */
   watchExtensions?: string[];
-  /**
-   * アウトラインエディタが編集する（`body: Body = [...]` を含む）TypeScript ファイルの相対パス．
-   */
-  outlineFile?: string;
 }
 
 /**
@@ -122,8 +117,24 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
     ) => {
       if (outputPath) {
         generatedPdfPaths.add(outputPath);
+        writeFileSync(outputPath, Buffer.from(pdf));
       }
       currentPdf = Buffer.from(pdf);
+      sendToClients("updated", "");
+    };
+
+    (globalThis as any).__minitypeSendImages = (
+      images: Uint8Array[],
+      basePath: string,
+      previewPdf: Uint8Array,
+    ) => {
+      const base = basePath.replace(/\.png$/i, "");
+      for (let i = 0; i < images.length; i++) {
+        const outPath = images.length === 1 ? basePath : `${base}-${i}.png`;
+        generatedPdfPaths.add(outPath);
+        writeFileSync(outPath, Buffer.from(images[i]));
+      }
+      currentPdf = Buffer.from(previewPdf);
       sendToClients("updated", "");
     };
 
@@ -280,47 +291,6 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
           res.setHeader("Content-Type", "application/javascript");
           res.setHeader("Cache-Control", "no-store");
           res.end(workerJs);
-        },
-      );
-
-      // GET / POST /__minitype/outline/**
-      // アウトラインエディタのエンドポイント群
-      server.middlewares.use(
-        "/__minitype/outline",
-        createOutlineHandler(options.outlineFile, projectRoot),
-      );
-
-      // POST /__minitype/style-override
-      // GUI スタイルパネルからのスタイルオーバーライドを受け取り，再組版する
-      server.middlewares.use(
-        "/__minitype/style-override",
-        (req: IncomingMessage, res: ServerResponse) => {
-          if (req.method !== "POST") {
-            // 405 Method Not Allowed
-            res.statusCode = 405;
-            res.end();
-            return;
-          }
-          const chunks: Buffer[] = [];
-          req.on("data", (chunk: Buffer) => {
-            chunks.push(chunk);
-          });
-          req.on("end", () => {
-            try {
-              const body = Buffer.concat(chunks).toString("utf-8");
-              const override = JSON.parse(body);
-              (globalThis as any).__minitypeStyleOverride =
-                override && Object.keys(override).length > 0 ? override : null;
-              runEntry(server);
-              res.statusCode = 200;
-              res.setHeader("Content-Type", "application/json");
-              res.end("{}");
-            } catch {
-              // 400 Bad Request
-              res.statusCode = 400;
-              res.end();
-            }
-          });
         },
       );
 

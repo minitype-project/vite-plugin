@@ -54,6 +54,20 @@ export const runBuildHandler = async (
       );
     }
   };
+
+  (globalThis as any).__minitypeSendImages = (
+    images: Uint8Array[],
+    basePath: string,
+    // previewPdf はビルドモードでは使用しない
+  ) => {
+    const base = basePath.replace(/\.png$/i, "");
+    for (let i = 0; i < images.length; i++) {
+      const outPath = images.length === 1 ? basePath : `${base}-${i}.png`;
+      writeFileSync(outPath, Buffer.from(images[i]));
+      console.log(`[minitype] Image saved: ${outPath}`);
+    }
+  };
+
   (globalThis as any).__minitypeSendError = (error: unknown) => {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[minitype] Typesetting error: ${message}`);

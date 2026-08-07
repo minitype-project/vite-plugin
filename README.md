@@ -1,0 +1,79 @@
+# @minitype/vite-plugin
+
+minitype の Vite プラグインです．
+開発サーバ上でファイルの変更を検知して組版を自動実行し，ブラウザ上でリアルタイムプレビューを提供します．
+
+## 機能
+
+- ファイルの変更を検知して組版を自動実行
+- ブラウザ上での PDF リアルタイムプレビュー
+- アウトラインパネル（PDF の目次 + ページジャンプ）の表示
+- フォントパネル（登録済みフォント一覧）の表示
+- PDF ダウンロード
+- `vite build` による PDF のローカル書き出し
+
+## セットアップ
+
+1. `@minitype/vite-plugin` をインストールします．
+
+```bash
+# npm
+npm install -D vite @minitype/vite-plugin
+
+# yarn
+yarn add -D vite @minitype/vite-plugin
+```
+
+2. `vite.config.ts` を作成します．
+
+```ts
+import { defineConfig } from "vite";
+import minitype from "@minitype/vite-plugin";
+
+export default defineConfig({
+  plugins: [
+    minitype({
+      entry: "src/index.ts",
+    }),
+  ],
+});
+```
+
+3. `package.json` の `scripts` に以下を追加します．
+
+```json
+{
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  }
+}
+```
+
+## 使い方
+
+既存の minitype プロジェクトをそのまま使用できます．
+
+`npm run dev` または `npx vite` より，開発サーバを起動するとブラウザでプレビューが表示されます．
+`.ts` ファイルやその他の監視対象ファイルを変更するたびに自動で再組版されます．
+
+`vite build` を実行すると，組版結果の PDF をローカルに書き出します．
+
+## プレビューアプリの操作
+
+| 操作                     | 説明                                  |
+| ------------------------ | ------------------------------------- |
+| マウスホイール           | ズームイン / ズームアウト             |
+| Ctrl/Command + `+` / `-` | ズームイン / ズームアウト（ステップ） |
+| Ctrl/Command + `0`       | 標準倍率にもどす                      |
+| 数字キー + `Enter`       | 指定ページへジャンプ                  |
+| Outline ボタン           | アウトラインパネルの開閉              |
+| Fonts ボタン             | フォントパネルの開閉                  |
+| Download PDF ボタン      | PDF をダウンロード                    |
+
+## オプション
+
+| オプション        | 型         | デフォルト                                           | 説明                                                       |
+| ----------------- | ---------- | ---------------------------------------------------- | ---------------------------------------------------------- |
+| `entry`           | `string`   | `"src/index.ts"`                                     | 組版エントリファイルの相対パス                             |
+| `watchExtensions` | `string[]` | `["md", "webp", "jpeg", "jpg", "png", "gif", "pdf"]` | ファイル変更時に再組版をトリガーする拡張子（`.ts` を除く） |

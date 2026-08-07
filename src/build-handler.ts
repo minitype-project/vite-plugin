@@ -2,6 +2,7 @@ import { writeFileSync } from "node:fs";
 import { createServer } from "vite";
 
 export const MINITYPE_PACKAGE = "@minitype/minitype";
+export const DEFAULT_ENTRY = "src/index.ts";
 
 type ResolveIdFn = (
   id: string,
@@ -73,7 +74,7 @@ export const runBuildHandler = async (
     console.error(`[minitype] Typesetting error: ${message}`);
   };
 
-  const rawEntry = entry ?? "index.ts";
+  const rawEntry = entry ?? DEFAULT_ENTRY;
   const entryUrl = rawEntry.startsWith("/") ? rawEntry : `/${rawEntry}`;
 
   try {

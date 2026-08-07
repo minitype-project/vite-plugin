@@ -50,7 +50,7 @@ export const useZoom = () => {
       if (!e.metaKey && !e.ctrlKey) {
         return;
       }
-      if (e.key === "+" || e.key === "=") {
+      if (e.code === "Equal" || e.code === "Plus" || e.code === "Semicolon") {
         e.preventDefault();
         setVerticalCenter();
         isStepZoomRef.current = true;
@@ -58,7 +58,7 @@ export const useZoom = () => {
           const next = ZOOM_LEVELS.find((level) => level > prev);
           return next ?? ZOOM_MAX;
         });
-      } else if (e.key === "-") {
+      } else if (e.code === "Minus") {
         e.preventDefault();
         setVerticalCenter();
         isStepZoomRef.current = true;
@@ -66,6 +66,11 @@ export const useZoom = () => {
           const next = [...ZOOM_LEVELS].reverse().find((level) => level < prev);
           return next ?? ZOOM_MIN;
         });
+      } else if (e.code === "Digit0") {
+        e.preventDefault();
+        setVerticalCenter();
+        isStepZoomRef.current = true;
+        setZoom(ZOOM_DEFAULT);
       }
     };
 
@@ -80,11 +85,11 @@ export const useZoom = () => {
       setZoom((prev) => Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, prev * factor)));
     };
 
-    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keydown", onKeyDown, { capture: true });
     window.addEventListener("wheel", onWheel, { passive: false });
 
     return () => {
-      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keydown", onKeyDown, { capture: true });
       window.removeEventListener("wheel", onWheel);
     };
   }, []);

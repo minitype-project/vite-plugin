@@ -3,6 +3,7 @@ import * as pdfjs from "pdfjs-dist";
 import { createRoot } from "react-dom/client";
 
 import App from "./App.jsx";
+import { colors } from "./color.js";
 
 // `Map.prototype.getOrInsertComputed` は React 19.2 にて使用されるが，ブラウザでは未実装のためポリフィルを適用
 if (!("getOrInsertComputed" in Map.prototype)) {
@@ -36,9 +37,11 @@ if (rootElement) {
             margin: 0;
             padding: 0;
           }
+            
           body {
-            background: hsl(0 0 98);
+            background: ${colors.offWhite};
           }
+
           #root {
             height: 100vh;
             display: flex;

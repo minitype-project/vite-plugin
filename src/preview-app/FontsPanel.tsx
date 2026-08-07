@@ -56,7 +56,7 @@ const FontsPanel = ({ width }: FontsPanelProps) => {
       });
   }, []);
 
-  const handleCopy = (key: string) => {
+  const onCopy = (key: string) => {
     navigator.clipboard.writeText(key).catch((err) => {
       console.error("Failed to copy font key:", err);
     });
@@ -93,7 +93,7 @@ const FontsPanel = ({ width }: FontsPanelProps) => {
               key={key}
               title="Click to copy"
               onClick={() => {
-                handleCopy(key);
+                onCopy(key);
               }}
             >
               {key}

@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { colors, statusColors } from "./color.js";
 
-const Wrapper = styled.div`
+const Wrapper = styled.header`
   height: 40px;
   color: ${colors.lightGray};
   font-size: 13px;
@@ -78,7 +78,7 @@ const Button = styled.button<{ $active?: boolean }>`
   background: none;
   display: flex;
   align-items: center;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.8);
 
   &:hover {
     color: ${colors.purple};

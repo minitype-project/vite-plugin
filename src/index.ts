@@ -6,7 +6,11 @@ import { fileURLToPath } from "node:url";
 import { getFontKeys } from "@minitype/minitype";
 import type { Plugin, ResolvedConfig, ViteDevServer } from "vite";
 
-import { MINITYPE_PACKAGE, runBuildHandler } from "./build-handler.js";
+import {
+  DEFAULT_ENTRY,
+  MINITYPE_PACKAGE,
+  runBuildHandler,
+} from "./build-handler.js";
 import { generateServerWrapperCode } from "./server-wrapper.js";
 
 // SSR コンテキストで `minitype` インポートを差し替えるラッパーモジュール
@@ -31,13 +35,15 @@ const deafultWatchExtensions = [
   "pdf",
 ];
 
+export const defaultEntry = "src/index.ts";
+
 /**
  * `@minitype/vite-plugin` のオプション．
  */
 export interface MinitypePluginOptions {
   /**
    * 組版エントリファイルの相対パス．
-   * @default 'index.ts'
+   * @default 'src/index.ts'
    */
   entry?: string;
   /**
@@ -164,7 +170,7 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
         }
       }
 
-      const rawEntry = options.entry ?? "index.ts";
+      const rawEntry = options.entry ?? DEFAULT_ENTRY;
       const entryUrl = rawEntry.startsWith("/") ? rawEntry : `/${rawEntry}`;
       await server.ssrLoadModule(entryUrl);
     } catch (error) {
@@ -328,7 +334,7 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
       server.middlewares.use(
         "/",
         (_req: IncomingMessage, res: ServerResponse) => {
-          const entryDisplay = options.entry ?? "index.ts";
+          const entryDisplay = options.entry ?? DEFAULT_ENTRY;
           res.setHeader("Content-Type", "text/html; charset=utf-8");
           res.end(htmlTemplate.replace("%ENTRY%", entryDisplay));
         },

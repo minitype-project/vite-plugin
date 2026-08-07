@@ -3,6 +3,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { getFontKeys } from "@minitype/minitype";
 import type { Plugin, ResolvedConfig, ViteDevServer } from "vite";
 
 import { MINITYPE_PACKAGE, runBuildHandler } from "./build-handler.js";
@@ -223,10 +224,7 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
     configureServer(server: ViteDevServer) {
       setupGlobals();
 
-      // ビルド済みのブラウザアプリとワーカーをサーバ起動時に一度読み込む
-      const previewAppJs = readFileSync(
-        path.join(distDir, "preview-app/index.js"),
-      );
+      // Worker をサーバ起動時に一度読み込む
       const require = createRequire(import.meta.url);
       const workerJs = readFileSync(
         require.resolve("pdfjs-dist/build/pdf.worker.min.mjs"),
@@ -277,6 +275,9 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
       server.middlewares.use(
         "/__minitype/app.js",
         (_req: IncomingMessage, res: ServerResponse) => {
+          const previewAppJs = readFileSync(
+            path.join(distDir, "preview-app/index.js"),
+          );
           res.setHeader("Content-Type", "application/javascript");
           res.setHeader("Cache-Control", "no-store");
           res.end(previewAppJs);
@@ -284,13 +285,25 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
       );
 
       // GET /__minitype/pdf.worker.js
-      // pdfjs-dist のワーカーファイルを配信する
+      // pdfjs-dist の Worker ファイルを配信する
       server.middlewares.use(
         "/__minitype/pdf.worker.js",
         (_req: IncomingMessage, res: ServerResponse) => {
           res.setHeader("Content-Type", "application/javascript");
           res.setHeader("Cache-Control", "no-store");
           res.end(workerJs);
+        },
+      );
+
+      // GET /__minitype/fonts
+      // 利用可能なフォントキーの一覧を JSON 配列で返す
+      server.middlewares.use(
+        "/__minitype/fonts",
+        (_req: IncomingMessage, res: ServerResponse) => {
+          const keys = getFontKeys();
+          res.setHeader("Content-Type", "application/json");
+          res.setHeader("Cache-Control", "no-store");
+          res.end(JSON.stringify(keys));
         },
       );
 

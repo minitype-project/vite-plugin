@@ -31,12 +31,12 @@ if (rootElement) {
           *,
           *::before,
           *::after {
+            font-family: system-ui, -apple-system, sans-serif;
             box-sizing: border-box;
             margin: 0;
             padding: 0;
           }
           body {
-            font-family: system-ui, -apple-system, sans-serif;
             background: hsl(0 0 98);
           }
           #root {

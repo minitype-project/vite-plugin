@@ -1,53 +1,38 @@
 import styled from "@emotion/styled";
-import { useEffect, useState } from "react";
-import { panel } from "./color.js";
-
-const Wrapper = styled.div<{ $width: number }>`
-  width: ${(props) => props.$width}px;
-  margin: 16px;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  background: ${panel.bg};
-`;
+import { useEffect, useRef, useState } from "react";
+import { colors } from "./color.js";
+import { PanelEmptyState, PanelItemList, PanelWrapper } from "./PanelBase.js";
 
 const SearchInput = styled.input`
   width: 100%;
-  color: ${panel.text};
+  color: ${colors.charcoal};
   padding: 10px 12px;
   border: none;
-  border-bottom: 1px solid ${panel.border};
+  border-bottom: 1px solid ${colors.lightGray};
   box-sizing: border-box;
   flex-shrink: 0;
 
   &::placeholder {
-    color: ${panel.placeholder};
+    color: ${colors.gray};
   }
 `;
 
-const ItemList = styled.div`
-  padding: 4px 0;
-  flex: 1;
-  overflow-y: auto;
-`;
-
 const Item = styled.div`
-  color: ${panel.text};
+  color: ${colors.charcoal};
   font-size: 13px;
   line-height: 1.4;
   word-break: break-word;
   padding: 6px 16px;
   user-select: text;
+  cursor: pointer;
+
+  &:hover {
+    background: ${colors.offWhite};
+  }
 `;
 
-const EmptyState = styled.div`
-  color: ${panel.text};
-  display: flex;
-  align-items: center;
-  flex: 1;
-  justify-content: center;
+const EmptyState = styled(PanelEmptyState)`
+  color: ${colors.charcoal};
 `;
 
 interface FontsPanelProps {
@@ -58,6 +43,7 @@ interface FontsPanelProps {
 const FontsPanel = ({ width }: FontsPanelProps) => {
   const [fontKeys, setFontKeys] = useState<string[]>([]);
   const [query, setQuery] = useState("");
+  const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     fetch("/__minitype/fonts")
@@ -70,6 +56,15 @@ const FontsPanel = ({ width }: FontsPanelProps) => {
       });
   }, []);
 
+  const handleCopy = (key: string) => {
+    navigator.clipboard.writeText(key).catch((err) => {
+      console.error("Failed to copy font key:", err);
+    });
+    if (copiedTimerRef.current !== null) {
+      clearTimeout(copiedTimerRef.current);
+    }
+  };
+
   const filtered =
     query === ""
       ? fontKeys
@@ -78,7 +73,7 @@ const FontsPanel = ({ width }: FontsPanelProps) => {
         );
 
   return (
-    <Wrapper $width={width}>
+    <PanelWrapper $width={width}>
       <SearchInput
         type="text"
         placeholder="Filter fonts"
@@ -92,13 +87,21 @@ const FontsPanel = ({ width }: FontsPanelProps) => {
           {fontKeys.length === 0 ? "Loading..." : "No fonts found"}
         </EmptyState>
       ) : (
-        <ItemList>
+        <PanelItemList>
           {filtered.map((key) => (
-            <Item key={key}>{key}</Item>
+            <Item
+              key={key}
+              title="Click to copy"
+              onClick={() => {
+                handleCopy(key);
+              }}
+            >
+              {key}
+            </Item>
           ))}
-        </ItemList>
+        </PanelItemList>
       )}
-    </Wrapper>
+    </PanelWrapper>
   );
 };
 

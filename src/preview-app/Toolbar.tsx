@@ -1,12 +1,12 @@
 import styled from "@emotion/styled";
-import { dark, statusColors } from "./color.js";
+import { colors, statusColors } from "./color.js";
 
 const Wrapper = styled.div`
   height: 40px;
-  color: ${dark.toolbarText};
+  color: ${colors.lightGray};
   font-size: 13px;
   padding: 16px;
-  background: ${dark.toolbarBg};
+  background: ${colors.black};
   display: flex;
   justify-content: space-between;
 `;
@@ -20,22 +20,20 @@ const Inner = styled.div`
 const Logo = styled.span`
   font-size: 14px;
   font-weight: 700;
-  color: ${dark.accent};
+  color: ${colors.purple};
 `;
 
 const Slash = styled.span`
-  color: ${dark.surface};
+  color: ${colors.gray};
   margin: 0 8px;
 `;
 
 const Entry = styled.span`
   font-size: 13px;
-  color: ${dark.subtext};
 `;
 
 const ZoomLabel = styled.span`
   font-size: 12px;
-  color: ${dark.subtext};
   min-width: 3.5em;
   text-align: right;
 `;
@@ -55,7 +53,7 @@ const statusBadgeBg = (status: AppStatus): string => {
 };
 
 const StatusBadge = styled.span<{ $status: AppStatus }>`
-  color: ${statusColors.text};
+  color: ${colors.charcoal};
   margin-left: auto;
   padding: 4px 10px;
   border-radius: 12px;
@@ -72,8 +70,7 @@ const Buttons = styled.div`
 `;
 
 const Button = styled.button<{ $active?: boolean }>`
-  color: ${(props) => (props.$active ? dark.accent : dark.subtext)};
-  font-family: inherit;
+  color: ${(props) => (props.$active ? colors.purple : "inherit")};
   padding: 4px 8px;
   border: none;
   border-radius: 4px;
@@ -84,7 +81,7 @@ const Button = styled.button<{ $active?: boolean }>`
   background: rgba(0, 0, 0, 0.5);
 
   &:hover {
-    color: ${dark.accent};
+    color: ${colors.purple};
   }
 
   &:disabled {

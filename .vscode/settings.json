@@ -14,5 +14,8 @@
   },
   "editor.codeActionsOnSave": {
     "source.fixAll.biome": "explicit"
+  },
+  "[markdown]": {
+    "editor.formatOnSave": false
   }
 }

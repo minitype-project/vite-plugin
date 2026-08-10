@@ -80,3 +80,12 @@ export default defineConfig({
 | --- | --- | --- | --- |
 | `entry?` | `string` | `"src/index.ts"` | 組版エントリファイルの相対パス |
 | `watchExtensions?` | `string[]` | `["md", "webp", "jpeg", "jpg", "png", "gif", "pdf"]` | ファイル変更時に再組版をトリガーする拡張子（`.ts` を除く） |
+
+## ライセンス・謝辞
+
+Copyright (c) 2026 Yuto Wada.
+This software is released under the MIT License, see [LICENSE](./LICENSE).
+
+本ソフトウェアは，2025 年度下期 未踏アドバンスト事業の支援を受けて開発されました．
+
+- [未踏アドバンスト事業：2025年度下期実施プロジェクト概要（和田PJ）](https://www.ipa.go.jp/jinzai/mitou/advanced/2025second/gaiyou-fj-1.html)

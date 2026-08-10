@@ -1,4 +1,10 @@
 /**
+ * Copyright (c) 2026 Yuto Wada.
+ * Released under the MIT License.
+ * https://opensource.org/licenses/MIT
+ */
+
+/**
  * サーバサイド（Node.js）向け minitype ラッパモジュールのコードを生成する．
  * `minitype` 関数を上書きして，PDF をグローバルコールバック経由でプレビューへ送る．
  */

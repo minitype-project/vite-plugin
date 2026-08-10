@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2026 Yuto Wada.
+ * Released under the MIT License.
+ * https://opensource.org/licenses/MIT
+ */
+
 import { readFileSync, writeFileSync } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { createRequire } from "node:module";

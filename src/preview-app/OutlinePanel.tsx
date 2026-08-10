@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2026 Yuto Wada.
+ * Released under the MIT License.
+ * https://opensource.org/licenses/MIT
+ */
+
 import styled from "@emotion/styled";
 import type React from "react";
 import { colors } from "./color.js";

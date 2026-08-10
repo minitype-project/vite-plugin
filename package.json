@@ -1,8 +1,14 @@
 {
   "name": "@minitype/vite-plugin",
   "version": "0.1.0",
-  "description": "Vite plugin for minitype — live preview with HMR.",
+  "description": "Vite plugin for minitype",
   "author": "Yuto Wada",
+  "license": "MIT",
+  "homepage": "https://typeset.jp",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/minitype-project/vite-plugin.git"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "exports": {
@@ -18,7 +24,9 @@
   "scripts": {
     "build": "tsx build.ts && tsc --emitDeclarationOnly && tsc-alias",
     "watch": "tsx build.ts --watch",
-    "check": "biome check ./src --write"
+    "check": "biome check ./src --write",
+    "license": "addlicense -f .license-header.txt src/*.ts src/**/*.ts src/**/*.tsx",
+    "license:check": "addlicense -check -f .license-header.txt src/*.ts src/**/*.ts src/**/*.tsx"
   },
   "peerDependencies": {
     "vite": ">=5.0.0"

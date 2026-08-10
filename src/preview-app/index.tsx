@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2026 Yuto Wada.
+ * Released under the MIT License.
+ * https://opensource.org/licenses/MIT
+ */
+
 import { css, Global } from "@emotion/react";
 import * as pdfjs from "pdfjs-dist";
 import { createRoot } from "react-dom/client";

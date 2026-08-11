@@ -113,7 +113,6 @@ const App = ({ entry }: AppProps) => {
             <Pages>
               {pages.map((page, index) => (
                 <PdfPage
-                  // biome-ignore lint/suspicious/noArrayIndexKey: ページ順序は固定
                   key={index}
                   ref={(el) => {
                     pageRefsRef.current[index] = el;

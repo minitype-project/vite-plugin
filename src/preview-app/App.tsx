@@ -113,7 +113,7 @@ const App = ({ entry }: AppProps) => {
             <Pages>
               {pages.map((page, index) => (
                 <PdfPage
-                  key={index}
+                  key={page.url}
                   ref={(el) => {
                     pageRefsRef.current[index] = el;
                   }}

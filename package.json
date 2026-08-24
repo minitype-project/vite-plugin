@@ -9,6 +9,20 @@
     "type": "git",
     "url": "https://github.com/minitype-project/vite-plugin.git"
   },
+  "bugs": {
+    "url": "https://github.com/minitype-project/vite-plugin/issues"
+  },
+  "keywords": [
+    "minitype",
+    "plugin",
+    "vite",
+    "typesetting",
+    "pdf",
+    "preview"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "exports": {

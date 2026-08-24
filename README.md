@@ -76,6 +76,13 @@ export default defineConfig({
 
 ## オプション
 
+```ts
+export interface MinitypePluginOptions {
+  entry?: string;
+  watchExtensions?: string[];
+}
+```
+
 | オプション | 型 | デフォルト | 説明 |
 | --- | --- | --- | --- |
 | `entry?` | `string` | `"src/index.ts"` | 組版エントリファイルの相対パス |

@@ -1,6 +1,9 @@
 import { copyFileSync, mkdirSync } from "node:fs";
+import { createRequire } from "node:module";
 import { dirname } from "node:path";
 import { type BuildOptions, build, context, type Plugin } from "esbuild";
+
+const require = createRequire(import.meta.url);
 
 const isWatch = process.argv.includes("--watch");
 
@@ -34,6 +37,10 @@ const previewOptions: BuildOptions = {
     copyFilePlugin(
       "./src/preview-app/index.html",
       "./dist/preview-app/index.html",
+    ),
+    copyFilePlugin(
+      require.resolve("pdfjs-dist/build/pdf.worker.min.mjs"),
+      "./dist/pdf.worker.min.mjs",
     ),
   ],
 };

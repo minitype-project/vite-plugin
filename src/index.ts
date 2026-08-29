@@ -6,7 +6,6 @@
 
 import { readFileSync, writeFileSync } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { getFontKeys } from "@minitype/minitype";
@@ -236,10 +235,9 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
     configureServer(server: ViteDevServer) {
       setupGlobals();
 
-      // Worker をサーバ起動時に一度読み込む
-      const require = createRequire(import.meta.url);
+      // Worker をサーバ起動時に一度読み込む（ビルド時にコピーしたものを使い API とバージョンを一致させる）
       const workerJs = readFileSync(
-        require.resolve("pdfjs-dist/build/pdf.worker.min.mjs"),
+        path.join(distDir, "pdf.worker.min.mjs"),
       );
 
       // ファイルを Vite のファイル監視に追加

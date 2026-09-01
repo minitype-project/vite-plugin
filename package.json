@@ -1,6 +1,6 @@
 {
   "name": "@minitype/vite-plugin",
-  "version": "0.1.2",
+  "version": "1.0.0",
   "description": "Vite plugin for minitype",
   "author": "Yuto Wada",
   "license": "MIT",

@@ -40,19 +40,25 @@
     "watch": "tsx build.ts --watch",
     "check": "biome check ./src --write",
     "license": "addlicense -f .license-header.txt src/*.ts src/**/*.ts src/**/*.tsx",
-    "license:check": "addlicense -check -f .license-header.txt src/*.ts src/**/*.ts src/**/*.tsx"
+    "license:check": "addlicense -check -f .license-header.txt src/*.ts src/**/*.ts src/**/*.tsx",
+    "changelog": "conventional-changelog -p conventionalcommits -i CHANGELOG.md -s -r 2",
+    "prepare": "husky"
   },
   "peerDependencies": {
     "vite": ">=5.0.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.10",
+    "@commitlint/cli": "^21.2.2",
+    "@commitlint/config-conventional": "^21.2.2",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@types/node": "^22.0.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "conventional-changelog-cli": "^5.0.0",
     "esbuild": "^0.25.10",
+    "husky": "^9.1.7",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "tsc-alias": "^1.8.16",
@@ -62,6 +68,7 @@
   },
   "dependencies": {
     "@minitype/minitype": "^0.1.0",
-    "pdfjs-dist": "^5.6.205"
+    "pdfjs-dist": "^5.6.205",
+    "react-icons": "^5.7.0"
   }
 }

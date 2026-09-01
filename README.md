@@ -6,6 +6,8 @@
 **@minitype/vite-plugin** is a Vite plugin for [minitype](http://typeset.jp).
 It detects file changes on the development server to automatically run typesetting and provide a real-time preview in the browser.
 
+[開発ガイド](./docs/development.md)
+
 ## 機能
 
 - ファイルの変更を検知して組版を自動実行

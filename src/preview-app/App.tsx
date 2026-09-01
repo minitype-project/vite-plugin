@@ -55,6 +55,15 @@ const PdfPage = styled.img`
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
 `;
 
+const PanelOverlay = styled.div`
+  position: fixed;
+  top: 40px;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 99;
+`;
+
 const OUTLINE_PANEL_DEFAULT_WIDTH = 240;
 
 interface AppProps {
@@ -99,6 +108,14 @@ const App = ({ entry }: AppProps) => {
       />
 
       <MainArea>
+        {(isOutlinePanelOpen || isFontsPanelOpen) && (
+          <PanelOverlay
+            onClick={() => {
+              setIsOutlinePanelOpen(false);
+              setIsFontsPanelOpen(false);
+            }}
+          />
+        )}
         {isOutlinePanelOpen && (
           <OutlinePanel
             outline={outline}

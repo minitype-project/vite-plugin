@@ -236,9 +236,7 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
       setupGlobals();
 
       // Worker をサーバ起動時に一度読み込む（ビルド時にコピーしたものを使い API とバージョンを一致させる）
-      const workerJs = readFileSync(
-        path.join(distDir, "pdf.worker.min.mjs"),
-      );
+      const workerJs = readFileSync(path.join(distDir, "pdf.worker.min.mjs"));
 
       // ファイルを Vite のファイル監視に追加
       const extensions = options.watchExtensions ?? deafultWatchExtensions;

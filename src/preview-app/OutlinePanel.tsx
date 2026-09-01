@@ -20,7 +20,7 @@ const Item = styled.div<{ $depth: number }>`
   cursor: pointer;
   font-size: 13px;
   line-height: 1.4;
-  padding: 8px 16px 8px ${(props) => 12 + props.$depth * 16}px;
+  padding: 6px 16px 6px ${(props) => 16 + props.$depth * 16}px;
 
   &:hover {
     background: ${colors.offWhite};

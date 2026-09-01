@@ -6,6 +6,7 @@
 
 import styled from "@emotion/styled";
 import { useEffect, useRef, useState } from "react";
+import { MdCheck, MdOutlineContentCopy } from "react-icons/md";
 import { colors } from "./color.js";
 import { PanelEmptyState, PanelItemList, PanelWrapper } from "./PanelBase.js";
 
@@ -24,6 +25,9 @@ const SearchInput = styled.input`
 `;
 
 const Item = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
   color: ${colors.charcoal};
   font-size: 13px;
   line-height: 1.4;
@@ -35,6 +39,14 @@ const Item = styled.div`
   &:hover {
     background: ${colors.offWhite};
   }
+`;
+
+const ItemIcon = styled.span`
+  flex-shrink: 0;
+  color: ${colors.gray};
+  font-size: 14px;
+  display: flex;
+  align-items: center;
 `;
 
 const EmptyState = styled(PanelEmptyState)`
@@ -49,6 +61,7 @@ interface FontsPanelProps {
 const FontsPanel = ({ width }: FontsPanelProps) => {
   const [fontKeys, setFontKeys] = useState<string[]>([]);
   const [query, setQuery] = useState("");
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -66,9 +79,13 @@ const FontsPanel = ({ width }: FontsPanelProps) => {
     navigator.clipboard.writeText(key).catch((err) => {
       console.error("Failed to copy font key:", err);
     });
+    setCopiedKey(key);
     if (copiedTimerRef.current !== null) {
       clearTimeout(copiedTimerRef.current);
     }
+    copiedTimerRef.current = setTimeout(() => {
+      setCopiedKey(null);
+    }, 1500);
   };
 
   const filtered =
@@ -102,6 +119,9 @@ const FontsPanel = ({ width }: FontsPanelProps) => {
                 onCopy(key);
               }}
             >
+              <ItemIcon>
+                {copiedKey === key ? <MdCheck /> : <MdOutlineContentCopy />}
+              </ItemIcon>
               {key}
             </Item>
           ))}

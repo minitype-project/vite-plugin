@@ -6,6 +6,37 @@
 
 import * as pdfjs from "pdfjs-dist";
 
+type LinkBase = {
+  /** ページ幅に対する左端の位置（0..1）． */
+  left: number;
+  /** ページ高さに対する上端の位置（0..1）． */
+  top: number;
+  /** ページ幅に対する幅（0..1）． */
+  width: number;
+  /** ページ高さに対する高さ（0..1）． */
+  height: number;
+};
+
+/**
+ * 外部リンク注釈．
+ */
+export type ExternalLink = LinkBase & {
+  url: string;
+};
+
+/**
+ * 内部リンク注釈．
+ */
+export type InternalLink = LinkBase & {
+  /** ジャンプ先ページインデックス（0 始まり）． */
+  pageIndex: number;
+};
+
+/**
+ * ページ上のリンク注釈．
+ */
+export type LinkAnnotation = ExternalLink | InternalLink;
+
 /**
  * レンダリング済みページのデータ．
  */
@@ -16,6 +47,8 @@ export type PageData = {
   width: number;
   /** CSS 高さ（px）． */
   height: number;
+  /** ページ上のリンク注釈一覧． */
+  links: LinkAnnotation[];
 };
 
 /**
@@ -70,10 +103,47 @@ export const renderPdf = async (
       }, "image/png");
     });
 
+    const rawAnnotations = await page.getAnnotations();
+    const links: LinkAnnotation[] = [];
+
+    for (const ann of rawAnnotations) {
+      if (ann.subtype !== "Link") {
+        continue;
+      }
+      // PDF 座標系（左下原点）をビューポート座標系（左上原点）に変換し，0..1 に正規化
+      const [vx1, vy1, vx2, vy2] = viewport.convertToViewportRectangle(
+        ann.rect,
+      );
+      const left = Math.min(vx1, vx2) / viewport.width;
+      const top = Math.min(vy1, vy2) / viewport.height;
+      const width = Math.abs(vx2 - vx1) / viewport.width;
+      const height = Math.abs(vy2 - vy1) / viewport.height;
+
+      if (ann.url) {
+        links.push({ left, top, width, height, url: ann.url });
+        continue;
+      }
+      if (ann.dest) {
+        try {
+          let dest = ann.dest;
+          if (typeof dest === "string") {
+            dest = await pdf.getDestination(dest);
+          }
+          if (dest?.[0]) {
+            const pageIndex = await pdf.getPageIndex(dest[0]);
+            links.push({ left, top, width, height, pageIndex });
+          }
+        } catch {
+          // ページ解決に失敗した場合はスキップ
+        }
+      }
+    }
+
     pages.push({
       url,
       width: viewport.width / deviceScale,
       height: viewport.height / deviceScale,
+      links,
     });
   }
 

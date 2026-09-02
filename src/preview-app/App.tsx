@@ -49,10 +49,19 @@ const PageJumpIndicator = styled.nav`
   left: 50%;
 `;
 
-const PdfPage = styled.img`
+const PageContainer = styled.div`
   border-radius: 2px;
-  display: block;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  position: relative;
+`;
+
+const PdfPage = styled.img`
+  display: block;
+`;
+
+const LinkOverlay = styled.a`
+  position: absolute;
+  cursor: pointer;
 `;
 
 const PanelOverlay = styled.div`
@@ -73,7 +82,7 @@ interface AppProps {
 const App = ({ entry }: AppProps) => {
   const [isOutlinePanelOpen, setIsOutlinePanelOpen] = useState(false);
   const [isFontsPanelOpen, setIsFontsPanelOpen] = useState(false);
-  const pageRefsRef = useRef<(HTMLImageElement | null)[]>([]);
+  const pageRefsRef = useRef<(HTMLElement | null)[]>([]);
   const { zoom, isStepZoomRef, contentRef } = useZoom();
   const { status, pages, outline, error, onDownload } = usePdfStream({
     entry,
@@ -129,16 +138,42 @@ const App = ({ entry }: AppProps) => {
           {hasPages && (
             <Pages>
               {pages.map((page, index) => (
-                <PdfPage
+                <PageContainer
                   key={page.url}
                   ref={(el) => {
                     pageRefsRef.current[index] = el;
                   }}
-                  src={page.url}
-                  alt={`Page ${index + 1}`}
-                  width={page.width * zoom}
-                  height={page.height * zoom}
-                />
+                >
+                  <PdfPage
+                    src={page.url}
+                    alt={`Page ${index + 1}`}
+                    width={page.width * zoom}
+                    height={page.height * zoom}
+                  />
+                  {page.links.map((link, linkIndex) => (
+                    <LinkOverlay
+                      // biome-ignore lint/suspicious/noArrayIndexKey: リンク注釈は再組版まで変化しない
+                      key={linkIndex}
+                      href={"url" in link ? link.url : "#"}
+                      target={"url" in link ? "_blank" : undefined}
+                      rel={"url" in link ? "noopener noreferrer" : undefined}
+                      onClick={
+                        "pageIndex" in link
+                          ? (e) => {
+                              e.preventDefault();
+                              onJumpToPage(link.pageIndex);
+                            }
+                          : undefined
+                      }
+                      style={{
+                        left: link.left * page.width * zoom,
+                        top: link.top * page.height * zoom,
+                        width: link.width * page.width * zoom,
+                        height: link.height * page.height * zoom,
+                      }}
+                    />
+                  ))}
+                </PageContainer>
               ))}
             </Pages>
           )}

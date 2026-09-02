@@ -19,7 +19,7 @@ interface UsePageJumpOptions {
   /** スクロールコンテナの ref． */
   contentRef: RefObject<HTMLDivElement | null>;
   /** ページ要素の ref 配列． */
-  pageRefsRef: RefObject<(HTMLImageElement | null)[]>;
+  pageRefsRef: RefObject<(HTMLElement | null)[]>;
 }
 
 /**

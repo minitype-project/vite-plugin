@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1](https://github.com/minitype-project/vite-plugin/compare/v0.2.0...v0.2.1) (2026-09-07)
+
+
+### Bug Fixes
+
+* broaden SSR noExternal to @minitype/* and migrate to hotUpdate hook ([b97f69a](https://github.com/minitype-project/vite-plugin/commit/b97f69ad796a24801c72723c7e7de937f7bb0652))
+* broaden SSR noExternal to @minitype/* and migrate to hotUpdate hook ([f960d20](https://github.com/minitype-project/vite-plugin/commit/f960d20de7b9a9e8e95be92817bf7b064bc9d749))
+
 ## [0.2.0](https://github.com/minitype-project/vite-plugin/compare/v0.1.3...v0.2.0) (2026-09-02)
 
 

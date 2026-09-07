@@ -32,7 +32,7 @@ export const runBuildHandler = async (
     // HTTP サーバを起動しない
     server: { middlewareMode: true },
     appType: "custom",
-    ssr: { noExternal: [MINITYPE_PACKAGE] },
+    ssr: { noExternal: [/^@minitype\//] },
     plugins: [
       {
         name: "minitype-build",

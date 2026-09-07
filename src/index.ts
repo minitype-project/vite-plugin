@@ -192,7 +192,7 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
     config(_, { command }) {
       const base = {
         ssr: {
-          noExternal: [MINITYPE_PACKAGE],
+          noExternal: [/^@minitype\//],
         },
       };
       if (command !== "build") {
@@ -365,12 +365,17 @@ export const minitypePlugin = (options: MinitypePluginOptions = {}): Plugin => {
       );
     },
 
-    // .ts ファイル変更時に再組版する
-    handleHotUpdate({ file, server }) {
-      if (file.endsWith(".ts")) {
-        // Vite のデフォルト HMR（ページリロード等）を抑制し，
-        // SSE 経由でプレビューのみ更新する
-        runEntry(server);
+    // .ts/.tsx ファイル変更時に再組版
+    hotUpdate({ type, file, server }) {
+      if (
+        type === "update" &&
+        (file.endsWith(".ts") || file.endsWith(".tsx"))
+      ) {
+        // SSR 環境でのみ runEntry を呼出（client 環境のフックで二重実行を防ぐ）
+        if (this.environment.name === "ssr") {
+          runEntry(server);
+        }
+        // 全環境でデフォルト HMR（SSR full-reload 等）を抑制
         return [];
       }
     },

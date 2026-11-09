@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0](https://github.com/minitype-project/vite-plugin/compare/v0.2.1...v0.3.0) (2026-11-09)
+
+
+### Features
+
+* replace entry name with current page indicator in toolbar ([73a31e9](https://github.com/minitype-project/vite-plugin/commit/73a31e9ca7c0255808dad7511607ddc3d60effe1))
+* replace entry name with current page indicator in toolbar ([ecc344f](https://github.com/minitype-project/vite-plugin/commit/ecc344f677e33b644f7c40450b21ff3adef02ffd))
+
 ## [0.2.1](https://github.com/minitype-project/vite-plugin/compare/v0.2.0...v0.2.1) (2026-09-07)
 
 

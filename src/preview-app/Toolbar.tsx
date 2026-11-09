@@ -29,13 +29,14 @@ const Logo = styled.span`
   color: ${colors.purple};
 `;
 
-const Slash = styled.span`
-  color: ${colors.gray};
-  margin: 0 8px;
+const PageLabel = styled.span`
+  font-size: 13px;
 `;
 
-const Entry = styled.span`
-  font-size: 13px;
+const CurrentPage = styled.span<{ $digits: number }>`
+  min-width: ${(props) => props.$digits}ch;
+  text-align: right;
+  display: inline-block;
 `;
 
 const ZoomLabel = styled.span`
@@ -97,14 +98,14 @@ const Button = styled.button<{ $active?: boolean }>`
 `;
 
 interface ToolbarProps {
-  /** エントリファイル名． */
-  entry: string;
+  /** 画面中央に表示されているページのインデックス． */
+  currentPageIndex: number;
+  /** 全体のページ数． */
+  pageCount: number;
   /** 現在のアプリ状態． */
   status: AppStatus;
   /** 現在のズーム倍率． */
   zoom: number;
-  /** PDF ページが存在するか． */
-  hasPages: boolean;
   /** アウトラインパネルが開いているか． */
   isOutlinePanelOpen: boolean;
   /** フォントパネルが開いているか． */
@@ -118,25 +119,30 @@ interface ToolbarProps {
 }
 
 const Toolbar = ({
-  entry,
+  currentPageIndex,
+  pageCount,
   status,
   zoom,
-  hasPages,
   isOutlinePanelOpen,
   isFontsPanelOpen,
   onToggleOutlinePanel,
   onToggleFontsPanel,
   onDownload,
 }: ToolbarProps) => {
+  const hasPages = pageCount > 0;
   const statusText = status.charAt(0).toUpperCase() + status.slice(1);
   return (
     <Wrapper>
       <Inner>
-        <div>
-          <Logo>minitype</Logo>
-          <Slash>/</Slash>
-          <Entry>{entry}</Entry>
-        </div>
+        <Logo>minitype</Logo>
+        {hasPages && (
+          <PageLabel>
+            <CurrentPage $digits={String(pageCount).length}>
+              {currentPageIndex + 1}
+            </CurrentPage>{" "}
+            / {pageCount}
+          </PageLabel>
+        )}
         <ZoomLabel>{Math.round(zoom * 100)}%</ZoomLabel>
         <Buttons>
           <Button

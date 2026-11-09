@@ -11,6 +11,7 @@ import FontsPanel from "./FontsPanel.jsx";
 import OutlinePanel from "./OutlinePanel.jsx";
 import StatusOverlay from "./StatusOverlay.jsx";
 import Toolbar from "./Toolbar.jsx";
+import useCurrentPage from "./useCurrentPage.js";
 import usePageJump from "./usePageJump.js";
 import usePdfStream from "./usePdfStream.js";
 import { useZoom } from "./useZoom.js";
@@ -94,15 +95,21 @@ const App = ({ entry }: AppProps) => {
     contentRef,
     pageRefsRef,
   });
+  const currentPageIndex = useCurrentPage({
+    pages,
+    zoom,
+    contentRef,
+    pageRefsRef,
+  });
   const hasPages = pages.length > 0;
 
   return (
     <>
       <Toolbar
-        entry={entry}
+        currentPageIndex={currentPageIndex}
+        pageCount={pages.length}
         status={status}
         zoom={zoom}
-        hasPages={hasPages}
         isOutlinePanelOpen={isOutlinePanelOpen}
         onToggleOutlinePanel={() => {
           setIsOutlinePanelOpen((prev) => !prev);

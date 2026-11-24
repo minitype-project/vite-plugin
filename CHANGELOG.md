@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1](https://github.com/minitype-project/vite-plugin/compare/v0.3.0...v0.3.1) (2026-11-24)
+
+
+### Bug Fixes
+
+* spread real document so server wrapper keeps all methods ([999c857](https://github.com/minitype-project/vite-plugin/commit/999c8571783f1291722ccdb36c1a6c0213a60617))
+* spread real document so server wrapper keeps all methods ([1a8109d](https://github.com/minitype-project/vite-plugin/commit/1a8109d1d894b47ee5cb2138448ae18b8be78252))
+
 ## [0.3.0](https://github.com/minitype-project/vite-plugin/compare/v0.2.1...v0.3.0) (2026-11-09)
 
 

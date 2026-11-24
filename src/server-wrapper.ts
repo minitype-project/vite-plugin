@@ -19,6 +19,7 @@ export const minitype = (groups, style, options) => {
   const realDoc = realMinitype.minitype(groups, style ?? {}, options);
 
   return {
+    ...realDoc,
     // PDF をプレビューへ送信する実装で上書き
     async save(outputPath) {
       try {
@@ -36,9 +37,6 @@ export const minitype = (groups, style, options) => {
         globalThis.__minitypeSendError?.(error);
       }
     },
-    toPdf: () => realDoc.toPdf(),
-    toImages: () => realDoc.toImages(),
-    getLayout: () => realDoc.getLayout(),
   };
 };
 `;
